@@ -1,0 +1,65 @@
+import cv2
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
+
+class CameraApp:
+ def __init__(self, root):
+ self.root = root
+ self.root.title("Camera App")
+ 
+ # Create buttons
+ self.capture_button = tk.Button(root, text="Capture Video", command=self.capture_video)
+ self.capture_button.pack(pady=10)
+ 
+ self.exit_button = tk.Button(root, text="Exit", command=self.exit_app)
+ self.exit_button.pack(pady=5)
+ 
+ # Video capture object
+ self.cap = None
+ self.droidcam_ip = "phone ip shown on droid cam app" # Replace with your phone's IP address and DroidCam port
+ 
+ def capture_video(self):
+ # Open video capture from DroidCam IP webcam
+ self.cap = cv2.VideoCapture(f"http://{self.droidcam_ip}/video")
+ 
+ if not self.cap.isOpened():
+ messagebox.showerror("Error", "Failed to open camera")
+ return
+ 
+ # Create a new window to display the video
+ self.video_window = tk.Toplevel(self.root)
+ self.video_window.title("Video Feed")
+ 
+ self.video_label = tk.Label(self.video_window)
+ self.video_label.pack()
+ 
+ self.update_video()
+ 
+ def update_video(self):
+ ret, frame = self.cap.read()
+ if ret:
+ # Convert the frame from BGR to RGB format
+ rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+ 
+ # Convert the frame to a format compatible with Tkinter
+ img = Image.fromarray(rgb_frame)
+ img = ImageTk.PhotoImage(image=img)
+ 
+ # Update the video label with the new frame
+ self.video_label.img = img
+ self.video_label.configure(image=img)
+ 
+ # Call this function again after 10 milliseconds
+ self.video_label.after(10, self.update_video)
+ 
+ def exit_app(self):
+ if self.cap is not None:
+ self.cap.release() # Release the camera capture object
+ self.root.quit()
+
+# Create Tkinter window
+root = tk.Tk()
+app = CameraApp(root)
+root.mainloop()
+Activate to view larger image,
